@@ -11,7 +11,7 @@ gama = 2.25 * (10 ** 6)  # dissipation
 # gama = 0
 h = 1  # Plank
 mu = 2.0028 * 5.788 * (10 ** -9)  # electron ~ nv
-# todo: investigate real values for w_*
+
 w_eu = 4.8367 * (10 ** 6)  # e->u transition frequency
 w_eg = 4.8367 * (10 ** 6) + h * E  # e->g transition frequency
 w_p = 4.8 * (10 ** 5)  # cavity frequency
@@ -64,7 +64,7 @@ def create_integrator():
 def main():
     r, t0 = create_integrator()
     t1 = 10 ** -6
-    dt = 10 ** -13
+    dt = 10 ** -11
     e, g, u = integrate(dt, r, t0, t1)
     plot_populations(dt, e, g, t0, t1, u)
 
