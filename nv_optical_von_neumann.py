@@ -59,7 +59,6 @@ def integrate():
 
 def main():
     t, sol = integrate()
-    print(sol)
     plot_rho(t, sol)
     plot_rho_t(t, sol)
 

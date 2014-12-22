@@ -4,7 +4,7 @@ B_z = 850.0
 psi_init = array([0.0, 1.0, 0.0j], dtype=np.complex128)
 D = 2877.0 * (10 ** 6)
 E = 7.7 * (10 ** 6)
-h = 4.135 * (10 ** -15);
+h = 4.135 * (10 ** -15)
 # electron
 mu = 2.0028 * 5.788 * (10 ** -9)
 omega_field = (h * D + mu * B_z) / h
@@ -16,17 +16,11 @@ def right_part(t, y):
     k1 = h * D
     k2 = h * E
     A = 750
-    hamiltonian = array([
-                  [k1 + mu * B_z, 
-                   mu * B_0(t, A) * cos(omega_field * t), 
-                   2 * k2], 
-                  [mu * B_0(t, A) * cos(omega_field * t), 
-                   0, 
-                   mu * B_0(t, A) * cos(omega_field * t)],
-                  [2 * k2, 
-                   mu * B_0(t, A) * cos(omega_field * t), 
-                   k1 - mu * B_z]
-                  ], dtype=np.complex128)
+    hamiltonian = array(
+        [[k1 + mu * B_z, mu * B_0(t, A) * cos(omega_field * t), 2 * k2],
+         [mu * B_0(t, A) * cos(omega_field * t), 0.0, mu * B_0(t, A) * cos(omega_field * t)],
+         [2 * k2, mu * B_0(t, A) * cos(omega_field * t), k1 - mu * B_z]],
+        dtype=np.complex128)
     return dot(hamiltonian, y) * (-1j / h)
 
 # Schrodinger equation    
