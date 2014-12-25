@@ -1,7 +1,7 @@
 from numpy import *
 import numpy as np
 B_z = 850.0
-psi_init = array([0.0, 1.0, 0.0j], dtype=np.complex128)
+psi_init = array([1.0, 0.0, 0.0j], dtype=np.complex128)
 D = 2877.0 * (10 ** 6)
 E = 7.7 * (10 ** 6)
 h = 4.135 * (10 ** -15)
@@ -41,7 +41,7 @@ while r.successful() and r.t < t1:
 
 import matplotlib.pyplot as plt
 x = linspace(t0, t1, (t1 - t0) / dt + 10)
-plt.plot(x, abs(one ** 2))
-plt.plot(x, abs(two ** 2))
-plt.plot(x, abs(three ** 2))
+plt.plot(x, abs(one ** 2), "green")
+plt.plot(x, abs(two ** 2), "blue")
+plt.plot(x, abs(three ** 2), "black")
 plt.show()

@@ -73,11 +73,11 @@ def right_part(rho, t):
 
 
 def integrate():
-    psi_init = np.array([[1.0, 0.0, 0.0],
+    rho_init = np.array([[1.0, 0.0, 0.0],
                          [0.0, 0.0, 0.0],
                          [0.0, 0.0, 0.0]], dtype=np.complex128)
     t = np.linspace(0, 10 ** -5, 2001)
-    sol = odeintw(right_part, psi_init, t)
+    sol = odeintw(right_part, rho_init, t)
     return t, sol
 
 
