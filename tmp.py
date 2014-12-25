@@ -18,10 +18,10 @@ w_z = w_m + h * D
 w_f = 4.8 * (10 ** 6)  # cavity frequency
 delta = w_p - w_f  # detuning of cavity relatively to nv resonant transition
 
-B_z = 50.0  # magnetic field to split |1> |-1> spin states
+B_z = 500.0  # magnetic field to split |1> |-1> spin states
 omega_s = 100.0 * (10 ** 6)
 omega_p = 100.0 * (10 ** 6)
-omega_z = 100.0 * (10 ** 3)
+omega_z = 30.0 * (10 ** 5)
 
 
 def plot_populations(dt, e, g, t0, t1, u, z):
@@ -49,12 +49,12 @@ def integrate(dt, r, t0, t1):
 
 # Schrodinger equation's
 def right_part(t, y):
-    a = 700
+    # a = 700
     hamiltonian = array(
-        [[0., -h * E / 2., -h * D / 2. - h * mu * B_z, -omega_p / 2. * cos(t * w_f)],
-         [-h * E / 2., 0., -h * D / 2. - h * mu * B_z, -omega_s / 2. * cos(t * w_f)],
-         [-h * D / 2. - h * mu * B_z, -h * D / 2. - h * mu * B_z, 0., -omega_z / 2. * cos(t * w_f)],
-         [-omega_p / 2. * cos(t * w_f), -omega_s / 2. * cos(t * w_f), -omega_z / 2. * cos(t * w_f), delta - 1j * gama]],
+        [[-w_p, -h * E / 2., -h * D / 2. - h * mu * B_z, -omega_p / 2. * exp(1j * t * w_f)],
+         [-h * E / 2., -w_m, -h * D / 2. - h * mu * B_z, -omega_s / 2. * exp(1j * t * w_f)],
+         [-h * D / 2. - h * mu * B_z, -h * D / 2. - h * mu * B_z, -((w_p + w_m) / 2 - h * D), -omega_z / 2. * exp(1j * t * w_f)],
+         [-omega_p / 2. * exp(-1j * t * w_f), -omega_s / 2. * exp(-1j * t * w_f), -omega_z / 2. * exp(-1j * t * w_f), delta - 1j * gama]],
         dtype=complex128)
     hamiltonian *= -1j / h
     return dot(hamiltonian, y)
