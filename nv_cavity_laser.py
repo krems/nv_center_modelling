@@ -16,7 +16,7 @@ B_z = 500.0  # magnetic field to split |1> |-1> spin states
 
 w_p = 4.706 * (10 ** 5) - h * mu * B_z  # e->u transition frequency 10**14
 w_m = w_p + h * E + h * mu * B_z  # e->g transition frequency
-w_p_laser = w_p + 10 ** 4  # cavity frequency
+w_p_laser = w_p + 2 * 10 ** 4  # cavity frequency
 w_c = w_m - 2 * 10 ** 4  # cavity frequency
 delta = 0
 
@@ -56,12 +56,18 @@ def integrate(dt, r, t0, t1):
 # Schrodinger equation's
 def right_part(t, y):
     hamiltonian = array(
-        [[w_c - 1j * kappa, - 1. / 2. * omega_p * exp(- 1j * t * (w_p - w_p_laser)), - 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0., 0., 0.],
-         [- 1. / 2. * omega_p * exp(1j * t * (w_p - w_p_laser)), w_c - 1j * kappa - w_p, 0, - 1. / 2. * omega_m * exp(1j * t * (w_p - w_c)), 0., 0.],
-         [- 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0., w_c - 1j * kappa + delta - w_m - 1j * gama, - 1. / 2. * omega_m * exp(1j * t * (w_m - w_c)), 0., 0.],
-         [0., - 1. / 2. * omega_m * exp(- 1j * t * (w_p - w_c)), - 1. / 2. * omega_m * exp(- 1j * t * (w_m - w_c)), 0., - 1. / 2. * omega_p * exp(- 1j * t * (w_p - w_p_laser)), - 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser))],
-         [0., 0., 0., - 1. / 2. * omega_p * exp(1j * t * (w_p - w_p_laser)), - w_p, 0.],
-         [0., 0., 0., - 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0., delta - w_m - 1j * gama]], dtype=complex128)
+        [[1.5 * w_c - 1j * kappa, -.5 * omega_p * exp(-1j * t * (w_p - w_p_laser)), -.5 * omega_p * exp(-1j * t * (w_m - w_p_laser)),
+          0., 0., 0.],
+         [-.5 * omega_p * exp(1j * t * (w_p - w_p_laser)), 1.5 * w_c - 1j * kappa - w_p, 0.,
+          -.5 * omega_m * exp(1j * t * (w_p - w_c)), 0., 0.],
+         [-.5 * omega_p * exp(1j * t * (w_m - w_p_laser)), 0., 1.5 * w_c - 1j * kappa + delta - w_m - 1j * gama,
+          -.5 * omega_m * exp(1j * t * (w_m - w_c)), 0., 0.],
+         [0., -.5 * omega_m * exp(-1j * t * (w_p - w_c)), -.5 * omega_m * exp(-1j * t * (w_m - w_c)),
+          .5 * w_c, -.5 * omega_p * exp(-1j * t * (w_p - w_p_laser)), -.5 * omega_p * exp(-1j * t * (w_m - w_p_laser))],
+         [0., 0., 0.,
+          -.5 * omega_p * exp(1j * t * (w_p - w_p_laser)), .5 * w_c - w_p, 0.],
+         [0., 0., 0.,
+          -.5 * omega_p * exp(1j * t * (w_m - w_p_laser)), 0., .5 * w_c + delta - w_m - 1j * gama]], dtype=complex128)
     hamiltonian *= -1j * h
     return dot(hamiltonian, y)
 
@@ -76,7 +82,7 @@ def create_integrator():
 
 def main():
     r, t0 = create_integrator()
-    t1 = 2 * 10 ** -5
+    t1 = 5 * 10 ** -5
     dt = 10 ** -7
     ee, eg, eu, ge, gg, gu = integrate(dt, r, t0, t1)
     plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1)
