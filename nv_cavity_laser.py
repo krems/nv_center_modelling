@@ -26,12 +26,12 @@ omega_p = 100.0 * (10 ** 4)
 
 def plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1):
     x = linspace(t0, t1, (t1 - t0) / dt + 10)
-    plt.plot(x, ee, "black", label="ee")
+    plt.plot(x, ee, "red", label="ee", linestyle='--')
     plt.plot(x, eg, "blue", label="e+")
     plt.plot(x, eu, "green", label="e-")
-    plt.plot(x, ge, "gray", label="ge")
-    plt.plot(x, gg, "red", label="g+")
-    plt.plot(x, gu, "orange", label="g-")
+    plt.plot(x, ge, "orange", label="ge", linewidth=2, linestyle='--')
+    plt.plot(x, gg, "black", label="g+", linewidth=2)
+    plt.plot(x, gu, "gray", label="g-", linewidth=2)
     plt.show()
 
 
@@ -83,7 +83,7 @@ def create_integrator():
 def main():
     r, t0 = create_integrator()
     t1 = 5 * 10 ** -5
-    dt = 10 ** -7
+    dt = 1 * 10 ** -8
     ee, eg, eu, ge, gg, gu = integrate(dt, r, t0, t1)
     plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1)
 
