@@ -6,56 +6,69 @@ import matplotlib.pyplot as plt
 
 # constants
 E = 7.7 * (10 ** -3)  # |-1> |1> distance
-gama = 2.25 * (10 ** 4)  # dissipation
-# gama = 0
+# gama = 2.25 * (10 ** 3)  # dissipation
+# kappa = 5 * (10 ** 4)
+gama = 0
+kappa = 0
 h = 1  # Plank
 mu = 2.0028 * 13.99624 * (10 ** 0)  # electron ~ nv
 B_z = 500.0  # magnetic field to split |1> |-1> spin states
 
 w_p = 4.706 * (10 ** 5) - h * mu * B_z  # e->u transition frequency 10**14
 w_m = w_p + h * E + h * mu * B_z  # e->g transition frequency
-w_p_laser = w_p  # cavity frequency
-w_m_laser = w_m  # cavity frequency
+w_p_laser = w_p + 10 ** 4  # cavity frequency
+w_c = w_m - 2 * 10 ** 4  # cavity frequency
 delta = 0
 
 omega_m = 100.0 * (10 ** 4)
 omega_p = 100.0 * (10 ** 4)
 
 
-def plot_populations(dt, e, g, u, t0, t1):
+def plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1):
     x = linspace(t0, t1, (t1 - t0) / dt + 10)
-    plt.plot(x, e, "green", label="e")
-    plt.plot(x, g, "blue", label="+")
-    plt.plot(x, u, "black", label="-")
+    plt.plot(x, ee, "black", label="ee")
+    plt.plot(x, eg, "blue", label="e+")
+    plt.plot(x, eu, "green", label="e-")
+    plt.plot(x, ge, "gray", label="ge")
+    plt.plot(x, gg, "red", label="g+")
+    plt.plot(x, gu, "orange", label="g-")
     plt.show()
 
 
 def integrate(dt, r, t0, t1):
-    e = linspace(t0, t1, (t1 - t0) / dt + 10)
-    g = linspace(t0, t1, (t1 - t0) / dt + 10)
-    u = linspace(t0, t1, (t1 - t0) / dt + 10)
+    ee = linspace(t0, t1, (t1 - t0) / dt + 10)
+    eg = linspace(t0, t1, (t1 - t0) / dt + 10)
+    eu = linspace(t0, t1, (t1 - t0) / dt + 10)
+    ge = linspace(t0, t1, (t1 - t0) / dt + 10)
+    gg = linspace(t0, t1, (t1 - t0) / dt + 10)
+    gu = linspace(t0, t1, (t1 - t0) / dt + 10)
     while r.successful() and r.t < t1:
         r.integrate(r.t + dt)
-        e[r.t / dt] = abs(r.y[0]) ** 2
-        g[r.t / dt] = abs(r.y[1]) ** 2
-        u[r.t / dt] = abs(r.y[2]) ** 2
-    return e, g, u
+        ee[r.t / dt] = abs(r.y[0]) ** 2
+        eg[r.t / dt] = abs(r.y[1]) ** 2
+        eu[r.t / dt] = abs(r.y[2]) ** 2
+        ge[r.t / dt] = abs(r.y[3]) ** 2
+        gg[r.t / dt] = abs(r.y[4]) ** 2
+        gu[r.t / dt] = abs(r.y[5]) ** 2
+    return ee, eg, eu, ge, gg, gu
 
 
 # Schrodinger equation's
 def right_part(t, y):
     hamiltonian = array(
-        [[2 * delta - 1j * gama / h, -omega_p * exp(1j * t * (w_p - w_p_laser)) -omega_m * exp(1j * t * (w_p - w_m_laser)), -omega_m * exp(1j * t * (w_m - w_m_laser))-omega_p * exp(1j * t * (w_m - w_p_laser))],
-         [-omega_p * exp(- 1j * t * (w_p - w_p_laser))-omega_m * exp(- 1j * t * (w_p - w_m_laser)), -2 * w_p, 0],
-         [-omega_m * exp(- 1j * t * (w_m - w_m_laser))-omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0, -2 * w_m]],
-        dtype=complex128)
-    hamiltonian *= -1j / 2
+        [[w_c - 1j * kappa, - 1. / 2. * omega_p * exp(- 1j * t * (w_p - w_p_laser)), - 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0., 0., 0.],
+         [- 1. / 2. * omega_p * exp(1j * t * (w_p - w_p_laser)), w_c - 1j * kappa - w_p, 0, - 1. / 2. * omega_m * exp(1j * t * (w_p - w_c)), 0., 0.],
+         [- 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0., w_c - 1j * kappa + delta - w_m - 1j * gama, - 1. / 2. * omega_m * exp(1j * t * (w_m - w_c)), 0., 0.],
+         [0., - 1. / 2. * omega_m * exp(- 1j * t * (w_p - w_c)), - 1. / 2. * omega_m * exp(- 1j * t * (w_m - w_c)), 0., - 1. / 2. * omega_p * exp(- 1j * t * (w_p - w_p_laser)), - 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser))],
+         [0., 0., 0., - 1. / 2. * omega_p * exp(1j * t * (w_p - w_p_laser)), - w_p, 0.],
+         [0., 0., 0., - 1. / 2. * omega_p * exp(- 1j * t * (w_m - w_p_laser)), 0., delta - w_m - 1j * gama]], dtype=complex128)
+    hamiltonian *= -1j * h
     return dot(hamiltonian, y)
 
 
 def create_integrator():
     r = ode(right_part).set_integrator('zvode', method='bdf', with_jacobian=False)
-    psi_init = array([0.0, 0.0, 1.0], dtype=complex128)
+    psi_init = array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], dtype=complex128)
     t0 = 0
     r.set_initial_value(psi_init, t0)
     return r, t0
@@ -64,9 +77,9 @@ def create_integrator():
 def main():
     r, t0 = create_integrator()
     t1 = 2 * 10 ** -5
-    dt = 10 ** -8
-    e, g, u = integrate(dt, r, t0, t1)
-    plot_populations(dt, e, g, u, t0, t1)
+    dt = 10 ** -7
+    ee, eg, eu, ge, gg, gu = integrate(dt, r, t0, t1)
+    plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1)
 
 
 main()
