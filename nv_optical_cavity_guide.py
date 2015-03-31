@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 # constants
 E = 7.7 * (10 ** -3)  # |-1> |1> distance
-gama = 2.25 * (10 ** 3)  # dissipation
-kappa = 5 * (10 ** 3)
-gm = 10 ** 3
+gama = 2.25 * (10 ** 3)  # dissipation from NV
+kappa = 5 * (10 ** 3)  # dissipation from cavity
+gm = 10 ** 3  # coupling wave-guide with cavity
 # gm = 0
 # gama = 0
 # kappa = 0
