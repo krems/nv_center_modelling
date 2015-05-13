@@ -5,27 +5,27 @@ from scipy.integrate import ode
 import matplotlib.pyplot as plt
 
 # constants
-E = 7.7 * (10 ** -3)  # |-1> |1> distance
-D = 2877.0 * (10 ** -3)
+E = 7.7 * (10 ** -3)  # ground m_s=-1 <-> m_s=1 splitting
+D = 2877.0 * (10 ** -3)  # ground m_s=0 <-> m_s=+-1 splitting
 # gama = 2.25 * (10 ** 4)  # dissipation
 gama = 0
 h = 1.  # Plank
 mu = 2.0028 * 13.99624 * (10 ** 0)  # electron ~ nv
 B_z = 0.0  # magnetic field to split |1> |-1> spin states
 
-w_p = 4.706 * (10 ** 5) - h * mu * B_z  # e->u transition frequency 10**14
-w_m = 4.706 * (10 ** 5) + h * E + h * mu * B_z  # e->g transition frequency
-w_z = 4.706 * (10 ** 5) + h * D
+w_p = 4.706 * (10 ** 5) - mu * B_z  # e<->u transition frequency 10**14
+w_m = 4.706 * (10 ** 5) + E + mu * B_z  # e<->g transition frequency
+w_z = 4.706 * (10 ** 5) + D
 w_p_laser = w_p  # cavity frequency
 w_m_laser = w_m  # cavity frequency
 delta = 0
-delta_z = 0.0000
+delta_z = 1420.0 * (10 ** -3)  # excited state m_s=0 <-> m_s=+-1 splitting
 
 omega_m = 100.0 * (10 ** 4)
 omega_p = 100.0 * (10 ** 4)
 omega_z = 100.0 * (10 ** 4)
 
-
+# basis vectors
 e = mat(array([1., 0., 0., 0., 0.], dtype=complex128))
 ez = mat(array([0., 1., 0., 0., 0.], dtype=complex128))
 p = mat(array([0., 0., 1., 0., 0.], dtype=complex128))
