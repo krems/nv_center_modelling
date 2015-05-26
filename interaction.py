@@ -6,27 +6,24 @@ from scipy.integrate import ode
 import matplotlib.pyplot as plt
 
 # constants
-E = 7.7 * (10 ** -3)  # |-1> |1> distance [shifted]
-D = 2877.0 * (10 ** -3)  # [shifted]
+E = 7.7 * (10 ** -3)  # |-1> |1> distance
+D = 2877.0 * (10 ** -3)
 h = 1.  # Plank
-# normalization 10 ** -9
-mu = 2.0028 * 13.99624 * (10 ** 0)  # electron ~ nv [shifted]
+mu = 2.0028 * 13.99624 * (10 ** 0)  # electron ~ nv
 B_z = 0.0  # magnetic field to split |1> |-1> spin states
 
-w_p = 4.706 * (10 ** 5) - mu * B_z  # e<->u transition frequency [shifted]
-w_m = w_p + E + mu * B_z  # e<->g transition frequency [shifted]
-w_l = w_p  # + 2 * 10 ** 4  # cavity frequency [shifted]
-w_c = w_m  # - 2 * 10 ** 4  # cavity frequency [shifted]
-delta = 0.  # [shifted]
-gama = 5. * (10 ** 2)  # dissipation from NV [shifted]
+w_p = 4.706 * (10 ** 5) - mu * B_z  # e<->u transition frequency 10**14
+w_m = w_p + E + mu * B_z  # e<->g transition frequency
+w_l = w_p  # + 2 * 10 ** 4  # cavity frequency
+w_c = w_m  # - 2 * 10 ** 4  # cavity frequency
+delta = 0
+gama = 5. * (10 ** 0)  # dissipation from NV ==> -3
 # gama = 0
-kappa = w_c / (2.4 * 10 ** 2)  # dissipation from cavity [shifted]
+kappa = w_c / (2.4 * 10 ** 3)  # dissipation from cavity ==> 7
 # kappa = 0
 
-omega_l_m = 1.0 * (10 ** 4)  # [shifted]
-omega_c_m = 1.0 * (10 ** 4)  # [shifted]
-omega_l_p = 1.0 * (10 ** 4)  # [shifted]
-omega_c_p = 1.0 * (10 ** 4)  # [shifted]
+omega_l = 100.0 * (10 ** 3)
+omega_c = 100.0 * (10 ** 3)
 
 cav_g = mat(array([0.0, 1.0]), dtype=complex128)
 cav_e = mat(array([1.0, 0.0]), dtype=complex128)
@@ -88,12 +85,11 @@ def integrate(dt, r, t0, t1):
 
 # Schrodinger equation's
 def right_part(t, y):
-    ham_c = -h * w_c * a.T.dot(a)
-    ham_nv = -h * (delta * b.T.dot(b) + w_p * d.dot(d.T) + w_m * b.dot(b.T))
-    ham_nv_c = -h * omega_c_m * (b.T.dot(a) + b.dot(a.T)) - h * omega_c_p * (d.T.dot(a) + d.dot(a.T))
-    ham_nv_laser = -h * omega_l_m * (b.T + b) - h * omega_l_p * (d.T + d)
-    dissipation = -1j * gama * b.T.dot(b) - 1j * kappa * a.dot(a.T)
-    hamiltonian = ham_c + ham_nv + ham_nv_c + ham_nv_laser + dissipation
+    hamiltonian = h * (omega_c * (exp(1j * t * (2. / 3. * w_m - w_c)) * b.T.dot(a) + exp(-1j * t * (2. / 3. * w_m - w_c)) * b.dot(a.T)) +
+                       omega_l * (exp(1j * t * (2. / 3. * w_p - w_c)) * d.T.dot(a) + exp(-1j * t * (2. / 3. * w_p - w_c)) * a.T.dot(d)) +
+                       omega_c * (exp(1j * t * (2. / 3. * w_m - w_l)) * b.T + exp(-1j * t * (2. / 3. * w_m - w_l)) * b) +
+                       omega_l * (exp(1j * t * (2. / 3. * w_p - w_l)) * d.T + exp(-1j * t * (2. / 3. * w_p - w_l)) * d))
+    hamiltonian += -1j * b.T.dot(b) - 1j * a.T.dot(a)
     return dot(hamiltonian, y) * (-1j / h)
 
 
@@ -107,8 +103,8 @@ def create_integrator():
 
 def main():
     r, t0 = create_integrator()
-    t1 = 2. * 10 ** -1
-    dt = 2. * 10 ** -5
+    t1 = 5 * 10 ** -4
+    dt = 5 * 10 ** -8
     ee, eg, eu, ge, gg, gu = integrate(dt, r, t0, t1)
     plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1)
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'valerii ovchinnikov'
 
 from numpy import *
@@ -7,8 +8,8 @@ import matplotlib.pyplot as plt
 # constants
 E = 7.7 * (10 ** -3)  # ground m_s=-1 <-> m_s=1 splitting
 D = 2877.0 * (10 ** -3)  # ground m_s=0 <-> m_s=+-1 splitting
-# gama = 2.25 * (10 ** 4)  # dissipation
-gama = 0
+D_e = 1420.0 * (10 ** -3)  # excited state m_s=0 <-> m_s=+-1 splitting
+delta = 0
 h = 1.  # Plank
 mu = 2.0028 * 13.99624 * (10 ** 0)  # electron ~ nv
 B_z = 0.0  # magnetic field to split |1> |-1> spin states
@@ -16,14 +17,12 @@ B_z = 0.0  # magnetic field to split |1> |-1> spin states
 w_p = 4.706 * (10 ** 5) - mu * B_z  # e<->u transition frequency 10**14
 w_m = 4.706 * (10 ** 5) + E + mu * B_z  # e<->g transition frequency
 w_z = 4.706 * (10 ** 5) + D
-w_p_laser = w_p  # cavity frequency
-w_m_laser = w_m  # cavity frequency
-delta = 0
-delta_z = 1420.0 * (10 ** -3)  # excited state m_s=0 <-> m_s=+-1 splitting
 
 omega_m = 100.0 * (10 ** 4)
 omega_p = 100.0 * (10 ** 4)
 omega_z = 100.0 * (10 ** 4)
+omega_parasite = omega_m / 10.0
+omega_relaxation = omega_m / 10.0
 
 # basis vectors
 e = mat(array([1., 0., 0., 0., 0.], dtype=complex128))
@@ -34,12 +33,19 @@ z = mat(array([0., 0., 0., 0., 1.], dtype=complex128))
 
 
 def plot_populations(e, ez, p, m, z, t0, t1, dt):
+    fig = plt.figure()
     x = linspace(t0, t1, (t1 - t0) / dt + 10)
     plt.plot(x, e, "green", label="e", linewidth=2)
-    plt.plot(x, ez, "orange", label="ez", linewidth=2)
-    plt.plot(x, p, "blue", label="+", linestyle='--')
-    plt.plot(x, m, "red", label="-")
-    plt.plot(x, z, "black", label="0", linewidth=2, linestyle='--')
+    plt.plot(x, ez, "orange", label="ez", linestyle='--')
+    plt.plot(x, p, "blue", label="+", linewidth=2, linestyle='--')
+    plt.plot(x, m, "red", label="-", linewidth=2, linestyle=':')
+    plt.plot(x, z, "black", label="0", linestyle='-')
+    fig.suptitle(u'Эволюция заселенностей с учетом паразитных уровней', fontsize=18)
+    plt.xticks([])
+    plt.xlabel(u't', fontsize=18)
+    plt.ylabel(u'Заселенности', fontsize=18)
+    plt.grid(True)
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -61,23 +67,10 @@ def integrate(dt, r, t0, t1):
 
 # Schrodinger equation's
 def right_part(t, y):
-    hamiltonian = -delta * e.T.dot(e) - delta_z * ez.T.dot(ez) - w_p * p.T.dot(p) - w_m * m.T.dot(m) - w_z * z.T.dot(z)
-    hamiltonian += 1. / 2. * (-omega_m * (exp(-1j * (w_m - w_m_laser) * t) * e.T.dot(m) +
-                                          exp(1j * (w_m - w_m_laser) * t) * m.T.dot(e) +
-                                          exp(-1j * (w_p - w_m_laser) * t) * e.T.dot(p) +
-                                          exp(1j * (w_p - w_m_laser) * t) * p.T.dot(e) +
-                                          exp(1j * (w_z - w_m_laser) * t) * m.T.dot(ez) +
-                                          exp(1j * (w_z - w_m_laser) * t) * p.T.dot(ez)) -
-                            omega_p * (exp(-1j * (w_p - w_p_laser) * t) * e.T.dot(p) +
-                                       exp(1j * (w_p - w_p_laser) * t) * p.T.dot(e) +
-                                       exp(-1j * (w_m - w_p_laser) * t) * e.T.dot(m) +
-                                       exp(1j * (w_m - w_p_laser) * t) * m.T.dot(e) +
-                                       exp(1j * (w_z - w_p_laser) * t) * m.T.dot(ez) +
-                                       exp(1j * (w_z - w_p_laser) * t) * p.T.dot(ez)) -
-                            omega_z * (exp(-1j * (w_z - w_m_laser) * t) * ez.T.dot(z) +
-                                       exp(-1j * (w_z - w_p_laser) * t) * ez.T.dot(z) +
-                                       exp(1j * (w_z - w_m_laser) * t) * z.T.dot(ez) +
-                                       exp(1j * (w_z - w_p_laser) * t) * z.T.dot(ez)))
+    hamiltonian = -delta * e.T.dot(e) - D_e * ez.T.dot(ez) - w_p * p.T.dot(p) - w_m * m.T.dot(m) - w_z * z.T.dot(z)
+    hamiltonian += omega_m * (e.T.dot(m) + m.T.dot(e)) + omega_p * (e.T.dot(p) + p.T.dot(e)) + \
+                   omega_z * (ez.T.dot(z) + z.T.dot(ez)) + omega_parasite * (ez.T.dot(p) + ez.T.dot(m) + p.T.dot(ez) + m.T.dot(ez)) + \
+                   omega_relaxation * (z.T.dot(e))
     hamiltonian *= -1j * h
     return dot(hamiltonian, y)
 
