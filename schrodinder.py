@@ -18,15 +18,15 @@ w_m = w_p + E + mu * B_z  # e<->g transition frequency [shifted]
 w_l = w_p  # + 2 * 10 ** 4  # cavity frequency [shifted]
 w_c = w_m  # - 2 * 10 ** 4  # cavity frequency [shifted]
 delta = 0.  # [shifted]
-gama = 5. * (10 ** -1)  # dissipation from NV [shifted]
-# gama = 0
-kappa = w_c / (2.4 * 10 ** 6)  # dissipation from cavity [shifted]
-# kappa = 0
+# gama = 5. * (10 ** -1)  # dissipation from NV [shifted]
+gama = 0
+# kappa = w_c / (2.4 * 10 ** 6)  # dissipation from cavity [shifted]
+kappa = 0
 
-omega_l_m = 1.0 * (10 ** 2)  # [shifted]
-omega_c_m = 1.0 * (10 ** 2)  # [shifted]
-omega_l_p = 1.0 * (10 ** 2)  # [shifted]
-omega_c_p = 1.0 * (10 ** 2)  # [shifted]
+omega_l_m = 1.0 * (10 ** 4)  # [shifted]
+omega_c_m = 1.0 * (10 ** 4)  # [shifted]
+omega_l_p = 1.0 * (10 ** 4)  # [shifted]
+omega_c_p = 1.0 * (10 ** 4)  # [shifted]
 
 cav_g = mat(array([0.0, 1.0]), dtype=complex128)
 cav_e = mat(array([1.0, 0.0]), dtype=complex128)
@@ -54,14 +54,14 @@ a = kron(cav_g.T.dot(cav_e), E_three)
 
 
 def plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1):
-    t = linspace(t0, t1, (t1 - t0) / dt + 10)
+    t = linspace(t0 * 1000, t1 * 1000, (t1 - t0) / dt + 10)
     plt.plot(t, ee, "red", label="|e,e>", linestyle='--')
     plt.plot(t, eg, "blue", label="|e,+>", linewidth=2.5, linestyle=':')
     plt.plot(t, eu, "green", label="|e,->", linewidth=2.5, linestyle='-.')
     plt.plot(t, ge, "orange", label="|g,e>", linewidth=2.5, linestyle='--')
     plt.plot(t, gg, "black", label="|g,+>", linestyle=':')
     plt.plot(t, gu, "gray", label="|g,->", linestyle='-.')
-    plt.xlabel(u't, нс')
+    plt.xlabel(u't, мкс')
     plt.ylabel(u'Заселенности')
     plt.grid(True)
     plt.legend(loc='best')
@@ -107,8 +107,8 @@ def create_integrator():
 
 def main():
     r, t0 = create_integrator()
-    t1 = 2. * 10 ** 1
-    dt = 2. * 10 ** -5
+    t1 = 2. * 10 ** -2
+    dt = 3. * 10 ** -5
     ee, eg, eu, ge, gg, gu = integrate(dt, r, t0, t1)
     plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1)
 

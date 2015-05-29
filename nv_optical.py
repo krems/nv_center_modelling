@@ -15,11 +15,11 @@ mu = 2.0028 * 5.788 * (10 ** -9)  # electron ~ nv
 w_eu = 4.8367 * (10 ** 6)  # e->u transition frequency
 w_eg = 4.8367 * (10 ** 6) + h * E  # e->g transition frequency
 w_p = 4.8 * (10 ** 5)  # cavity frequency
-delta = w_eu - w_p  # detuning of cavity relatively to nv resonant transition
+delta = 4.706 * 10 ** 5  # detuning of cavity relatively to nv resonant transition
 
 B_z = 850.0  # magnetic field to split |1> |-1> spin states
-omega_s = 45.0 * (10 ** 6)
-omega_p = 100.0 * (10 ** 6)
+omega_s = 1.0 * (10 ** 4)
+omega_p = 1.0 * (10 ** 4)
 
 
 def plot_populations(dt, e, g, t0, t1, u):
@@ -45,9 +45,9 @@ def integrate(dt, r, t0, t1):
 # Schrodinger equation's
 def right_part(t, y):
     hamiltonian = array(
-        [[delta - 1j * gama, omega_s, omega_p / 2.0 * sin(t * w_p)],
-         [omega_s, 0.0, 0.0],
-         [omega_p / 2.0 * sin(t * w_p), 0.0, 0.0]],
+        [[delta, omega_s, omega_p],
+         [omega_s, -delta * 2., 0.0],
+         [omega_p, 0.0, -delta * 2.]],
         dtype=complex128)
     hamiltonian *= -1j / h
     return dot(hamiltonian, y)
@@ -55,7 +55,7 @@ def right_part(t, y):
 
 def create_integrator():
     r = ode(right_part).set_integrator('zvode', method='bdf', with_jacobian=False)
-    psi_init = array([1.0, 0.0, 0.0], dtype=complex128)
+    psi_init = array([0.0, 0.0, 1.0], dtype=complex128)
     t0 = 0
     r.set_initial_value(psi_init, t0)
     return r, t0
@@ -63,8 +63,8 @@ def create_integrator():
 
 def main():
     r, t0 = create_integrator()
-    t1 = 10 ** -6
-    dt = 10 ** -13
+    t1 = 10 ** -5
+    dt = 10 ** -9
     e, g, u = integrate(dt, r, t0, t1)
     plot_populations(dt, e, g, t0, t1, u)
 
