@@ -24,9 +24,9 @@ gama = 0
 kappa = 0
 
 omega_l_m = 1.0 * (10 ** 4)  # [shifted]
-omega_c_m = 1.0 * (10 ** 4)  # [shifted]
 omega_l_p = 1.0 * (10 ** 4)  # [shifted]
-omega_c_p = 1.0 * (10 ** 4)  # [shifted]
+omega_c_m = 0.0 * (10 ** 4)  # [shifted]
+omega_c_p = 0.0 * (10 ** 4)  # [shifted]
 
 cav_g = mat(array([0.0, 1.0]), dtype=complex128)
 cav_e = mat(array([1.0, 0.0]), dtype=complex128)
@@ -54,18 +54,23 @@ a = kron(cav_g.T.dot(cav_e), E_three)
 
 
 def plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1):
-    t = linspace(t0 * 1000, t1 * 1000, (t1 - t0) / dt + 10)
+    # t = linspace(t0 * 1000, t1 * 1000, (t1 - t0) / dt + 10)
+    t = linspace(t0, t1, (t1 - t0) / dt + 10)
     plt.plot(t, ee, "red", label="|e,e>", linestyle='--')
     plt.plot(t, eg, "blue", label="|e,+>", linewidth=2.5, linestyle=':')
     plt.plot(t, eu, "green", label="|e,->", linewidth=2.5, linestyle='-.')
     plt.plot(t, ge, "orange", label="|g,e>", linewidth=2.5, linestyle='--')
     plt.plot(t, gg, "black", label="|g,+>", linestyle=':')
     plt.plot(t, gu, "gray", label="|g,->", linestyle='-.')
-    plt.xlabel(u't, мкс')
+    plt.xlabel(u't, нс')
     plt.ylabel(u'Заселенности')
     plt.grid(True)
     plt.legend(loc='best')
     plt.show()
+
+
+def commutator(a, b):
+    return a.dot(b) - b.dot(a)
 
 
 def integrate(dt, r, t0, t1):

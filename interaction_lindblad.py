@@ -11,20 +11,18 @@ h = 1.  # Plank
 mu = 2.0028 * 13.99624 * (10 ** 0)  # electron ~ nv
 B_z = 0.0  # magnetic field to split |1> |-1> spin states
 
-w_p = 4.706 * (10 ** 5) - mu * B_z  # e<->u transition frequency 10**14
+w_p = 4.706 * (10 ** 3) - mu * B_z  # e<->u transition frequency 10**14
 w_m = w_p + E + mu * B_z  # e<->g transition frequency
-w_c = w_m  # - 2 * 10 ** 4  # cavity frequency
-delta = 0
-gamma = 5. * (10 ** 1)  # dissipation from NV
+w_c = w_m  # cavity frequency
+w_l = w_p - 9. * 10 ** 2  # cavity frequency
+
+gamma = 5. * (10 ** 0)  # dissipation from NV [shifted]
 # gamma = 0
-Q = 2.4  # quality of cavity
-kappa = 4.706 * (10 ** 1) / Q  # dissipation from cavity
+kappa = w_c / (2.4 * 10 ** 3)  # dissipation from cavity [shifted]
 # kappa = 0
 
-omega_l_m = 0.7 * (10 ** 4)  # Rabi frequency
-omega_c_m = 0.7 * (10 ** 4)  # Rabi frequency
-omega_l_p = 0.7 * (10 ** 4)  # Rabi frequency
-omega_c_p = 0.7 * (10 ** 4)  # Rabi frequency
+omega_l = 1.0 * (10 ** 3)
+omega_c = 1.0 * (10 ** 3)
 
 cav_g = mat(array([0.0, 1.0]), dtype=complex128)
 cav_e = mat(array([1.0, 0.0]), dtype=complex128)
@@ -32,6 +30,13 @@ cav_e = mat(array([1.0, 0.0]), dtype=complex128)
 nv_e = mat(array([1.0, 0.0, 0.0]), dtype=complex128)
 nv_p = mat(array([0.0, 1.0, 0.0]), dtype=complex128)
 nv_m = mat(array([0.0, 0.0, 1.0]), dtype=complex128)
+
+ee = mat(kron(cav_e, nv_e))
+ep = mat(kron(cav_e, nv_p))
+em = mat(kron(cav_e, nv_m))
+ge = mat(kron(cav_g, nv_e))
+gp = mat(kron(cav_g, nv_p))
+gm = mat(kron(cav_g, nv_m))
 
 E_two = matrix([[1.0, 0.0],
                 [0.0, 1.0]], dtype=complex128)
@@ -44,28 +49,17 @@ d = kron(E_two, nv_p.T.dot(nv_e))
 a = kron(cav_g.T.dot(cav_e), E_three)
 
 
-def plot_rho(t, sol):
-    rho_sq = sol[t]
-    for i in range(0, 6):
-        for j in range(0, 6):
-            rho_sq[i][j] = abs(sol[t][i][j]) ** 2
-    print(rho_sq)
-    plt.pcolor(rho_sq)
-    plt.colorbar()
-    plt.show()
-
-
 def plot_rho_t(t, sol):
     t_printed = []
     for i in t:
-        t_printed.append(i * 10)
+        t_printed.append(i * 100)
     fig = plt.figure()
-    # plt.plot(t_printed, abs(sol[:, 0, 0] ** 2), "orange", label="ee", linestyle='--')
+    plt.plot(t_printed, abs(sol[:, 0, 0] ** 2), "orange", label="ee", linestyle='--')
     plt.plot(t_printed, abs(sol[:, 2, 2] ** 2), "blue", label="e+", linewidth=2, linestyle='--')
     plt.plot(t_printed, abs(sol[:, 1, 1] ** 2), "red", label="e-", linewidth=2, linestyle=':')
-    # plt.plot(t_printed, abs(sol[:, 3, 3] ** 2), "green", label="ge", linewidth=2, linestyle='-')
-    # plt.plot(t_printed, abs(sol[:, 5, 5] ** 2), "black", label="g+", linestyle=':')
-    # plt.plot(t_printed, abs(sol[:, 4, 4] ** 2), "gray", label="g-", linestyle='-.')
+    plt.plot(t_printed, abs(sol[:, 3, 3] ** 2), "green", label="ge", linewidth=2, linestyle='-')
+    plt.plot(t_printed, abs(sol[:, 5, 5] ** 2), "black", label="g+", linestyle=':')
+    plt.plot(t_printed, abs(sol[:, 4, 4] ** 2), "gray", label="g-", linestyle='-.')
     fig.suptitle(u'Эволюция заселенностей без диссипаций', fontsize=18)
     plt.xlabel(u't, нс', fontsize=18)
     plt.ylabel(u'Заселенности', fontsize=18)
@@ -78,17 +72,15 @@ def commutator(a, b):
     return a.dot(b) - b.dot(a)
 
 
-# Lindblad equation's
-def right_part(rho, t):
-    ham_c = -h * w_c * a.T.dot(a)
-    ham_nv = -h * (delta * b.T.dot(b) + w_p * d.dot(d.T) + w_m * b.dot(b.T))
-    ham_nv_c = -h * omega_c_m * (b.T.dot(a) + b.dot(a.T)) - h * omega_c_p * (d.T.dot(a) + d.dot(a.T))
-    ham_nv_laser = -h * omega_l_m * (b.T + b) - h * omega_l_p * (d.T + d)
-    hamiltonian = ham_c + ham_nv + ham_nv_c + ham_nv_laser
-
-    lindblad = - 1j / h * commutator(hamiltonian, rho)
-    lindblad += gamma / (h * 2.) * (commutator(b.dot(rho), b.T) + commutator(b, rho.dot(b.T)))
-    lindblad += kappa / (h * 2.) * (commutator(a.dot(rho), a.T) + commutator(a, rho.dot(a.T)))
+# Schrodinger equation's
+def right_part(y, t):
+    hamiltonian = h * (omega_c * (exp(1j * t * (w_m - w_c)) * b.T.dot(a) + exp(-1j * t * (w_m - w_c)) * b.dot(a.T)) +
+                       omega_c * (exp(1j * t * (w_p - w_c)) * d.T.dot(a) + exp(-1j * t * (w_p - w_c)) * a.T.dot(d)) +
+                       omega_l * (exp(1j * t * (w_m - w_l)) * b.T + exp(-1j * t * (w_m - w_l)) * b) +
+                       omega_l * (exp(1j * t * (w_p - w_l)) * d.T + exp(-1j * t * (w_p - w_l)) * d))
+    lindblad = - 1j / h * commutator(hamiltonian, y)
+    lindblad += gamma / (h * 2.) * (commutator(b.dot(y), b.T) + commutator(b, y.dot(b.T)))
+    lindblad += kappa / (h * 2.) * (commutator(a.dot(y), a.T) + commutator(a, y.dot(a.T)))
     return lindblad
 
 
@@ -99,7 +91,7 @@ def integrate():
                       [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                       [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                       [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]], dtype=complex128)
-    t = linspace(0, 5 * 10 ** -2, 2000)
+    t = linspace(0, 5 * 10 ** -3, 2000)
     sol = odeintw(right_part, rho_init, t)
     return t, sol
 
@@ -110,3 +102,4 @@ def main():
 
 
 main()
+

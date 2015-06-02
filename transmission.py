@@ -4,17 +4,13 @@ __author__ = 'valerii ovchinnikov'
 from numpy import *
 from matplotlib.pyplot import *
 
-w_c = 4.706 * (10 ** 5)  # - 2 * 10 ** 4  # cavity frequency
-w_nv = w_c
+w_nv = 4.706 * (10 ** 5)  # - 2 * 10 ** 4  # cavity frequency
+w_c = w_nv
 
 gamma = 5. * (10 ** -2)  # dissipation from NV
 kappa = w_c / (2.4 * 10 ** 5)  # dissipation from cavity
 
 omega = kappa / 2.
-
-
-def reflectance(w):
-    return 1. - kappa / (1j * (w_c - w) + kappa / 2. + omega ** 2 / (1j * (w_nv - w) + gamma / 2.))
 
 def transmission(omega, w):
     return 1. - kappa / (1j * (w_c - w) + kappa / 2. + omega**2 / (1j * (w_nv - w) - gamma / 2.))
