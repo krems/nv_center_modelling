@@ -13,12 +13,14 @@ B_z = 0.0  # magnetic field to split |1> |-1> spin states
 
 w_p = 4.706 * (10 ** 3) - mu * B_z  # e<->u transition frequency 10**14
 w_m = w_p + E + mu * B_z  # e<->g transition frequency
-w_c = 2. * (10 ** 3)  # cavity frequency
-w_l = (w_m + w_p) / 2. - .75 * 10 ** 3  # cavity frequency
+w_c = (w_m + w_p) / 2.  # cavity frequency
+w_l = (w_m + w_p) / 2.  # cavity frequency
 
 
-omega_l = 1.3 * (10 ** 3)
-omega_c = 1. * (10 ** 3)
+omega_l_m = 1. * (10 ** 3)
+omega_l_p = 1. * (10 ** 3)
+omega_c_m = 1. * (10 ** 3)
+omega_c_p = 1. * (10 ** 3)
 
 cav_g = mat(array([0.0, 1.0]), dtype=complex128)
 cav_e = mat(array([1.0, 0.0]), dtype=complex128)
@@ -47,7 +49,6 @@ a = kron(cav_g.T.dot(cav_e), E_three)
 
 def plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1):
     t = linspace(t0 * 100, t1 * 100, (t1 - t0) / dt + 10)
-    # t = linspace(t0, t1, (t1 - t0) / dt + 10)
     fig = plt.figure()
     # plt.plot(t, ee, "red", label="|e,e>", linestyle='--')
     plt.plot(t, eg, "blue", label="|e,+>", linewidth=2, linestyle='--')
@@ -55,11 +56,11 @@ def plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1):
     plt.plot(t, ge, "green", label="|g,e>", linewidth=2, linestyle='-')
     # plt.plot(t, gg, "black", label="|g,+>", linestyle=':')
     # plt.plot(t, gu, "gray", label="|g,->", linestyle='-.')
-    fig.suptitle(u'Эволюция заселенностей уровней NV-центра в микрорезонаторе с лазером', fontsize=18)
+    fig.suptitle(u'Эволюция заселенностей без диссипаций', fontsize=18)
     plt.xlabel(u't, нс', fontsize=18)
     plt.ylabel(u'Заселенности', fontsize=18)
     plt.grid(True)
-    # plt.legend(loc='best')
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -83,10 +84,10 @@ def integrate(dt, r, t0, t1):
 
 # Schrodinger equation's
 def right_part(t, y):
-    hamiltonian = h * (omega_c * (exp(1j * t * (w_m - w_c)) * b.T.dot(a) + exp(-1j * t * (w_m - w_c)) * b.dot(a.T)) +
-                       omega_c * (exp(1j * t * (w_p - w_c)) * d.T.dot(a) + exp(-1j * t * (w_p - w_c)) * a.T.dot(d)) +
-                       omega_l * (exp(1j * t * (w_m - w_l)) * b.T + exp(-1j * t * (w_m - w_l)) * b) +
-                       omega_l * (exp(1j * t * (w_p - w_l)) * d.T + exp(-1j * t * (w_p - w_l)) * d))
+    hamiltonian = h * (omega_c_m * (exp(1j * t * (w_m - w_c)) * b.T.dot(a) + exp(-1j * t * (w_m - w_c)) * b.dot(a.T)) +
+                       omega_c_p * (exp(1j * t * (w_p - w_c)) * d.T.dot(a) + exp(-1j * t * (w_p - w_c)) * a.T.dot(d)) +
+                       omega_l_m * (exp(1j * t * (w_m - w_l)) * b.T + exp(-1j * t * (w_m - w_l)) * b) +
+                       omega_l_p * (exp(1j * t * (w_p - w_l)) * d.T + exp(-1j * t * (w_p - w_l)) * d))
     return dot(hamiltonian, y) * (-1j / h)
 
 
@@ -100,7 +101,7 @@ def create_integrator():
 
 def main():
     r, t0 = create_integrator()
-    t1 = 2 * 10 ** -2
+    t1 = 5 * 10 ** -3
     dt = 5 * 10 ** -6
     ee, eg, eu, ge, gg, gu = integrate(dt, r, t0, t1)
     plot_populations(dt, ee, eg, eu, ge, gg, gu, t0, t1)
